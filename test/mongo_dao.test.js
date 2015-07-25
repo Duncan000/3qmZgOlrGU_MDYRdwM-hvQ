@@ -3,20 +3,23 @@
 var MongoDao = require('../lib/mongo_dao');
 var should = require('Should');
 var test_config = require('./db_config.test');
-var mongo_dao = new MongoDao(test_config);
 
 describe('MongoDao', function() {
 	describe('#create()', function() {
+		var mongo_dao;
+
 		this.timeout(8000);
 
-		before(function(done) {
+		beforeEach(function(done) {
+			mongo_dao = new MongoDao(test_config);
 			// delete all data first
-			mongo_dao.deleteAll(function(err) {
-				should.not.exist(err);
-				done();
-			});
+			mongo_dao.deleteAll(done);
 		});
-		  
+		 
+		afterEach(function(done) {
+			mongo_dao.closeConnection(done);
+		});
+		
 		context('when success', function() {
 			it('should save the exchange rate record to database', function(done) {
 				var from = 'USD';
@@ -29,8 +32,6 @@ describe('MongoDao', function() {
 
 					// read all data
 					mongo_dao.readAll(function(err, exchange_rates) {
-						mongo_dao.closeConnection();
-
 						// check correctness
 						should.not.exist(err);
 						should.exist(exchange_rates);

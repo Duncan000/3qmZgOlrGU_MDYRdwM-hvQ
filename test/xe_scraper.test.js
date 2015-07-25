@@ -46,6 +46,7 @@ describe('XeScraper', function() {
 				prepareNock().reply(200, 'Any unknown data');
 				
 				XeScraper.scrapeExchangeRate('USD','HKD', 1, function(err, result) {
+					// TODO: check parsing error
 					Should.exist(err);
 					Should.not.exist(result);
  					done();

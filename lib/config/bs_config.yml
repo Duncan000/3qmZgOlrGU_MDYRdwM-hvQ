@@ -1,0 +1,8 @@
+beanstalkd:
+    host: "challenge.aftership.net"
+    port: 11300
+watch:
+    - 'duncan000'
+handlers:
+    - "./lib/exchange_rate_handler.js"
+ignoreDefault: true

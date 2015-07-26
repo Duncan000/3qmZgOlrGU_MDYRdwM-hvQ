@@ -2,7 +2,7 @@
 
 var MongoDao = require('../lib/mongo_dao');
 var should = require('Should');
-var test_config = require('./db_config.test');
+var test_config = require('./config/db_config.test');
 
 describe('MongoDao', function() {
 	describe('#create()', function() {
@@ -56,7 +56,7 @@ describe('MongoDao', function() {
 				// create one sample data
 				mongo_dao.create(from, to, rate, function(err) {
 					should.exist(err);
-					err.message.should.equal('Illegal parameters');
+					err.message.should.equal('Invalid parameters');
 					done();
 				});
 			});
@@ -71,7 +71,7 @@ describe('MongoDao', function() {
 				// create one sample data
 				mongo_dao.create(from, to, rate, function(err) {
 					should.exist(err);
-					err.message.should.equal('Illegal parameters');
+					err.message.should.equal('Invalid parameters');
 					done();
 				});
 			});
@@ -86,7 +86,7 @@ describe('MongoDao', function() {
 				// create one sample data
 				mongo_dao.create(from, to, rate, function(err) {
 					should.exist(err);
-					err.message.should.equal('Illegal parameters');
+					err.message.should.equal('Invalid parameters');
 					done();
 				});
 			});

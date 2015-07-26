@@ -1,9 +1,9 @@
 'use strict';
 
 var argv = require('yargs')
-    .usage('Usage: beanworker --id=[ID] --config=[config.yml]')
+    .usage('Usage: $0 --id=[ID] --config=[worker_config.yml]')
     .default('id', 'defaultID')
-    .demand(['config'])
+    .default('config', './lib/config/worker_config.yml')
     .argv;
 
 var FiveBeans = require('fivebeans');

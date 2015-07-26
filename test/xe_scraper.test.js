@@ -1,13 +1,14 @@
 'use strict';
 
 var XeScraper = require('../lib/xe_scraper.js');
-var Should = require('Should');
-var Nock = require('nock');
+var should = require('Should');
+var nock = require('nock');
 
-var SAMPLE_FILE_PATH_SUCCESS = __dirname + '/sample_xe_usd_to_hkd.html';
+var SAMPLE_FILE_PATH_SUCCESS = __dirname + '/resource/sample_xe_usd_to_hkd.html';
+var SAMPLE_FILE_PATH_INVALID_CURRENY = __dirname + '/resource/sample_xe_unknown_to_hkd.html';
 
 var prepareNock = function() { 
-	return Nock(XeScraper.URL)
+	return nock(XeScraper.URL)
 	.get('')
     .query({From: 'USD', To: 'HKD', Amount: '1'});
 };
@@ -16,12 +17,12 @@ describe('XeScraper', function() {
 	describe('#scrapeExchangeRate()', function() {
 		
 		context('when present', function() {
-			it('Should return exchange rate', function(done) {
+			it('should return exchange rate', function(done) {
 				prepareNock().replyWithFile(200, SAMPLE_FILE_PATH_SUCCESS);
 				
-				XeScraper.scrapeExchangeRate('USD','HKD', 1, function(err, result) {
-					Should.not.exist(err);
-					Should.exist(result);
+				XeScraper.scrapeExchangeRate('USD','HKD', function(err, result) {
+					should.not.exist(err);
+					should.exist(result);
 					result.should.equal('7.75');
 					done();
 				});
@@ -29,12 +30,12 @@ describe('XeScraper', function() {
 		});
 		
 		context('when response status code other than 200', function() {
-			it('Should return status code error', function(done) {
+			it('should return status code error', function(done) {
 				prepareNock().reply(400, '');
 				
-				XeScraper.scrapeExchangeRate('USD','HKD', 1, function(err, result) {
-					Should.exist(err);
-					Should.not.exist(result);
+				XeScraper.scrapeExchangeRate('USD','HKD', function(err, result) {
+					should.exist(err);
+					should.not.exist(result);
 					err.message.should.equal(XeScraper.URL + ' responded with a bad code ' + 400);
  					done();
 				});
@@ -42,14 +43,29 @@ describe('XeScraper', function() {
 		});
 		
 		context('when response data is amended', function() {
-			it('Should return parsing error', function(done) {
+			it('should return parsing error', function(done) {
 				prepareNock().reply(200, 'Any unknown data');
 				
-				XeScraper.scrapeExchangeRate('USD','HKD', 1, function(err, result) {
-					// TODO: check parsing error
-					Should.exist(err);
-					Should.not.exist(result);
+				XeScraper.scrapeExchangeRate('USD','HKD', function(err, result) {
+					should.exist(err);
+					should.not.exist(result);
  					done();
+				});
+			});
+		});
+		
+		context('when input unknown currency', function() {
+			it('should return invalid parameter error', function(done) {
+				nock(XeScraper.URL)
+				.get('')
+			    .query({From: 'UNKNOWN', To: 'HKD', Amount: '1'})
+			    .replyWithFile(200, SAMPLE_FILE_PATH_INVALID_CURRENY);
+				
+				XeScraper.scrapeExchangeRate('UNKNOWN','HKD', function(err, result) {
+					should.exist(err);
+					should.not.exist(result);
+					err.message.should.equal('Invalid from/to currencies parameters');
+					done();
 				});
 			});
 		});

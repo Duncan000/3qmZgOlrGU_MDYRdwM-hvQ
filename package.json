@@ -2,6 +2,7 @@
   "name": "challenge",
   "version": "0.1.0",
   "description": "challenge",
+  "main": "./start_worker.js",
   "engines": {
     "node": ">=0.8"
   },
@@ -9,11 +10,15 @@
     "lib": "./lib"
   },
   "scripts": {
+	"start": "node ./start_worker.js",
     "test": "mocha --recursive -R spec"
   },
-  "repository": "",
+  "repository": {
+	  "type": "git",
+	  "url": "https://github.com/Duncan000/3qmZgOlrGU_MDYRdwM-hvQ"
+  },
   "keywords": [],
-  "author": "",
+  "author": "DUNCAN MAK",
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {

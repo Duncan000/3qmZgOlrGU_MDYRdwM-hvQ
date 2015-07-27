@@ -8,8 +8,10 @@ describe('MongoDao', function() {
 	describe('#create()', function() {
 		var mongo_dao;
 
-		this.timeout(8000);
-
+		before(function() {
+			this.timeout(8000);
+		});
+		
 		beforeEach(function(done) {
 			mongo_dao = new MongoDao(test_config);
 			// delete all data first

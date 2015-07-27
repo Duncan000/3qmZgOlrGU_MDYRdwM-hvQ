@@ -15,12 +15,13 @@ var prepareNock = function() {
 
 describe('XeScraper', function() {
 	describe('#scrapeExchangeRate()', function() {
+		var scraper = new XeScraper();
 		
 		context('when present', function() {
 			it('should return exchange rate', function(done) {
 				prepareNock().replyWithFile(200, SAMPLE_FILE_PATH_SUCCESS);
 				
-				XeScraper.scrapeExchangeRate('USD','HKD', function(err, result) {
+				scraper.scrapeExchangeRate('USD','HKD', function(err, result) {
 					should.not.exist(err);
 					should.exist(result);
 					result.should.equal('7.75');
@@ -33,7 +34,7 @@ describe('XeScraper', function() {
 			it('should return status code error', function(done) {
 				prepareNock().reply(400, '');
 				
-				XeScraper.scrapeExchangeRate('USD','HKD', function(err, result) {
+				scraper.scrapeExchangeRate('USD','HKD', function(err, result) {
 					should.exist(err);
 					should.not.exist(result);
 					err.message.should.equal(XeScraper.URL + ' responded with a bad code ' + 400);
@@ -46,7 +47,7 @@ describe('XeScraper', function() {
 			it('should return parsing error', function(done) {
 				prepareNock().reply(200, 'Any unknown data');
 				
-				XeScraper.scrapeExchangeRate('USD','HKD', function(err, result) {
+				scraper.scrapeExchangeRate('USD','HKD', function(err, result) {
 					should.exist(err);
 					should.not.exist(result);
  					done();
@@ -61,7 +62,7 @@ describe('XeScraper', function() {
 			    .query({From: 'UNKNOWN', To: 'HKD', Amount: '1'})
 			    .replyWithFile(200, SAMPLE_FILE_PATH_INVALID_CURRENY);
 				
-				XeScraper.scrapeExchangeRate('UNKNOWN','HKD', function(err, result) {
+				scraper.scrapeExchangeRate('UNKNOWN','HKD', function(err, result) {
 					should.exist(err);
 					should.not.exist(result);
 					err.message.should.equal('Invalid from/to currencies parameters');

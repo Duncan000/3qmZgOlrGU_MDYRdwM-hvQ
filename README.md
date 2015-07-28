@@ -1,89 +1,66 @@
-## The challenge
+##  Job payload format
 ---
-
-* DOWNLOAD this repository to your own Github public repository.
-* Create a new repo, name it by using this shortGUID generator
-* Do NOT fork, as other candidates would be able to see your solution easily.
-* Use [beanstalkd](http://kr.github.io/beanstalkd/), mongodb, nodejs
-* Get the xe.com exchange rate, store it in mongodb for every 1 min.
-
-
-## Goal
-----
-Code a currency exchagne rate `worker`
-
-1. Input currency from USD, to HKD
-2. Get USD to HKD currency every 1 min, save 10 successful result to mongodb.
-3. If any problem during the get rate attempt, retry it delay with 3s
-4. If failed more than 3 times, give up the job.
-
-#### The worker should:
-Scale horizontally (can run in more than 1 process in many different machines)
-
-## FAQ
-- `consumer worker` is the script to take the job from the queue, in this case is the scraper to get the exchange rate.
-- `seed` is the first data input, say HKD to USD to the queue.
-- `producer worker` is used to `SEED` the data only, it is optional in this challenge.
-- If you don't have xe.com api key, use your own way to get the answer.
-
-
-## How it work?
----
-
-1. Seed your job in beanstalkd, tube_name = your_github_username
-
-##### Sample beanstalk payload for getting HKD to USD currency, you can use any format or modify the payload to fit your need.
-```
-{
-  "from": "HKD",
-  "to": "USD"
-}
-```
-
-2. Code a nodejs worker, get the job from beanstalkd, get the data from xe.com and save it to mongodb. Exchange rate need to be round off to `2` decmicals in `STRING` type.
+	{
+	    "type":"exchange_rate",
+	    "payload":{
+	        "from":"HKD",
+	        "to":"USD",
+	        "success_count":2,
+	        "failure_count":0
+	    }
+	}
 	
-	a. If request is failed, reput to the tube and delay with 3s.
+In this project, we directly put success count and failure count in the payload. The job is reput to tube everytime succeeded or failed with amending the counts until reaching required success count or maximum failure count.
 
-	b. If request is succeed, reput to the tube and delay with 60s.
-
-##### mongodb data:
-```
-{
-	"from": "HKD",
-	"to": "USD",
-	"created_at": new Date(1347772624825),
-	"rate": "0.13"
-}
-
-```
-
-3. Stop the task if you tried 10 succeed attempts or 3 failed attempts.
-
-4. Scale horizontally: NOTICE that the above bs payload is just an example, you should make sure your script can be run as `distributed` system (in multiple instances / servers. Using CLUSER mode in NODE.JS DO NOT help)
-
-5. You are coding the `consumer worker`, NEVER use your `consumer worker` to `SEED` the data.
-
-6. You can seed the data to the tube with bs console or coding another `producer worker` to `SEED` the data.
-
-
-## Tools you need
+##  How to use
 ---
-1. beanstalkd server is setup for you already, make a JSON request to this:
+Install dependencies by `npm install`
 
-	/POST http://challenge.aftership.net:9578/v1/beanstalkd
+Config the files under /lib/config if necessary.
+
+####demo.js
+`node demo.js`
+
+Script to start a default worker & seed a default job.
+
+####start_worker.js
+`node start_worker.js --id=[ID] --config=[worker_config.yml]`
+
+`node start_worker.js --id="defaultID" --config="./lib/config/worker_config.yml"`
+
+Script to start a single worker. If args are not provided, the deafault is same as above command.
+
+####seed_job.js
+`node seed_job.js --from=[from] --to=[to] --config=[config]`
+
+`node seed_job.js --from="USD" --to="HKD" --config="./lib/config/emitter_config"`
+
+Script to seed a single job. If args are not provided, the deafault is same as above command.
+
+##Testing
+---
+`npm test`
+
+Config the files under /test/config if necessary.
+
+##Alternative
+---
+Use single job for getting 10 records instead of putting new job.
+
+####Worker
+* `release` the job no matter every single request succeeds or fails
+* `succeed` the job after getting 10 records in DB
+* `bury` the job after 3 failures
+
+####Calculation
+1. Store also job_id in mongoDB exchange rate record to get success_count
 	
-	header: aftership-api-key: a6403a2b-af21-47c5-aab5-a2420d20bbec
+	`success_count = counting records with this job_id`
 
-2. Get a free mongodb server at [mongolab](https://mongolab.com/welcome/)
+2. Use release_count in Beanstalk to calucalate failure_count
+	
+	`failure count = release_count - success_count`
 
-3. You should need [fivebeans](https://github.com/ceejbot/fivebeans) npm or any other npm u like.
+3. Involve timeout/server exceptions in the calculation if we count them as request failure
 
-4. You may also need [Beanstalk console](https://github.com/ptrofimov/beanstalk_console) or any tools u like.
-
-5. *MUST* follow [coding guideline](https://github.com/AfterShip/coding-guideline-javascript)
-
-6. *MUST* follow [coding documentation](https://github.com/AfterShip/jsdoc)
-
-## Help?
----
-am9ic0BhZnRlcnNoaXAuY29t
+It is based on we can use another schema different from requirement. It can be more tolerant of server faults because success_count is based on record count in DB.
